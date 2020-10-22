@@ -39,7 +39,7 @@ jobs:
             sastoken=$(az storage generate-sas --container-name templates --name name --permissions r --expiry $end --https-only)
             "::set-output name=TemplateToken::$sastoken"
 
-      - run: echo ${{deploy.templateupload.outputs.sastoken}}
+      - run: echo ${{ steps.templateupload.outputs.sastoken }}
 
       # - name: Deploy ARM Template
       #   id: arm
