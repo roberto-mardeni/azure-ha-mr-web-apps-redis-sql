@@ -1,0 +1,108 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "prefix": {
+      "type": "string",
+      "defaultValue": "hamrwa",
+      "metadata": {
+        "description": "Prefix to add for all resource names"
+      }
+    },
+    "firstRegionLocation": {
+      "type": "string",
+      "allowedValues": [
+        "AustraliaCentral",
+        "AustraliaCentral2",
+        "AustraliaEast",
+        "AustraliaSoutheast",
+        "BrazilSouth",
+        "BrazilSoutheast",
+        "CanadaCentral",
+        "CanadaEast",
+        "CentralIndia",
+        "CentralUS",
+        "CentralUSEUAP",
+        "ChinaEast",
+        "ChinaEast2",
+        "ChinaNorth",
+        "ChinaNorth2",
+        "EastAsia",
+        "EastUS",
+        "EastUS2",
+        "EastUS2EUAP",
+        "FranceCentral",
+        "FranceSouth",
+        "GermanyCentral",
+        "GermanyNorth",
+        "GermanyNortheast",
+        "GermanyWestCentral",
+        "JapanEast",
+        "JapanWest",
+        "JioIndiaCentral",
+        "JioIndiaWest",
+        "KoreaCentral",
+        "KoreaSouth",
+        "NorthCentralUS",
+        "NorthEurope",
+        "NorwayEast",
+        "NorwayWest",
+        "SouthAfricaNorth",
+        "SouthAfricaWest",
+        "SouthCentralUS",
+        "SoutheastAsia",
+        "SouthIndia",
+        "SwitzerlandNorth",
+        "SwitzerlandWest",
+        "UAECentral",
+        "UAENorth",
+        "UKSouth",
+        "UKWest",
+        "WestCentralUS",
+        "WestEurope",
+        "WestIndia",
+        "WestUS",
+        "WestUS2",
+        "WestUS3"
+      ],
+      "defaultValue": "eastus"
+    },
+    "ResourceGroupTemplateUri": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "firstRegionPrefix": "[concat(parameters('firstRegionResourceGroupName'),'-a-')]",
+    "firstRegionResourceGroupName": "[concat(variables('firstRegionPrefix'),'-rg')]"
+  },
+  "functions": [],
+  "resources": [{
+      "name": "[variables('firstRegionResourceGroupName')]",
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2020-06-01",
+      "location": "[parameters('firstRegionLocation')]",
+      "tags": {},
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-10-01",
+      "name": "[concat(variables('firstRegionResourceGroupName'),'-deploy')]",
+      "resourceGroup": "[variables('firstRegionResourceGroupName')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/resourceGroups', variables('firstRegionResourceGroupName'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "uri": "[parameters('ResourceGroupTemplateUri')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "prefix": "[variables('firstRegionPrefix')]"
+        }
+      }
+    }
+  ],
+  "outputs": {}
+}
