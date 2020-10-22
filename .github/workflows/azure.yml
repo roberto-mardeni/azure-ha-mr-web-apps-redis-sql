@@ -6,10 +6,10 @@ name: CI
 on: 
   push:
     branches:
-    - master
+      - main
     paths:
-    - .github/workflows/azure.yml
-    - src/**
+      - '.github/workflows/azure.yml'
+      - 'src/**'
 
 env:
   FIRST_LOCATION: "eastus"
