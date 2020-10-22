@@ -2,14 +2,14 @@
   "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "prefix": {
+    "Prefix": {
       "type": "string",
       "defaultValue": "hamrwa",
       "metadata": {
         "description": "Prefix to add for all resource names"
       }
     },
-    "firstRegionLocation": {
+    "FirstRegionLocation": {
       "type": "string",
       "allowedValues": [
         "AustraliaCentral",
@@ -72,7 +72,7 @@
     }
   },
   "variables": {
-    "firstRegionPrefix": "[concat(parameters('firstRegionResourceGroupName'),'-a-')]",
+    "firstRegionPrefix": "[concat(parameters('Prefix'),'-a-')]",
     "firstRegionResourceGroupName": "[concat(variables('firstRegionPrefix'),'-rg')]"
   },
   "functions": [],
@@ -80,7 +80,7 @@
       "name": "[variables('firstRegionResourceGroupName')]",
       "type": "Microsoft.Resources/resourceGroups",
       "apiVersion": "2020-06-01",
-      "location": "[parameters('firstRegionLocation')]",
+      "location": "[parameters('FirstRegionLocation')]",
       "tags": {},
       "properties": {}
     },
