@@ -12,7 +12,7 @@ on:
       - 'src/**'
 
 env:
-  FIRST_LOCATION: "eastus"
+  FIRST_LOCATION: "EastUS"
   PREFIX: "hamrwa"
   AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
 
