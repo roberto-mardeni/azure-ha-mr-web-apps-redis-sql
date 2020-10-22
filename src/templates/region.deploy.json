@@ -14,10 +14,27 @@
     "webAppPlanName": "[concat(parameters('prefix'),'-app-asp')]",
     "webAppName": "[concat(parameters('prefix'),'-app')]",
     "webApiPlanName": "[concat(parameters('prefix'),'-api-asp')]",
-    "webApiName": "[concat(parameters('prefix'),'-api')]"
+    "webApiName": "[concat(parameters('prefix'),'-api')]",
+    "redisCacheName": "[concat(parameters('prefix'),'-rc')]"
   },
   "functions": [],
   "resources": [{
+      "name": "[variables('redisCacheName')]",
+      "type": "Microsoft.Cache/redis",
+      "apiVersion": "2019-07-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "sku": {
+          "name": "Premium",
+          "family": "P",
+          "capacity": 1
+        },
+        "redisConfiguration": {},
+        "enableNonSslPort": false,
+        "redisVersion": "4",
+        "replicasPerMaster": 2
+      }
+    }, {
       "apiVersion": "2018-02-01",
       "name": "[variables('webAppPlanName')]",
       "type": "Microsoft.Web/serverfarms",
@@ -41,12 +58,18 @@
       "location": "[resourceGroup().location]",
       "tags": {},
       "dependsOn": [
+        "[resourceId('Microsoft.Cache/redis', variables('redisCacheName'))]",
         "[resourceId('Microsoft.Web/serverfarms/', variables('webAppPlanName'))]"
       ],
       "properties": {
         "siteConfig": {
           "defaultDocuments": [],
-          "appSettings": [],
+          "appSettings": [
+            { 
+              "name": "CacheConnection",
+              "value": "[concat(variables('redisCacheName'),'.redis.cache.windows.net,abortConnect=false,ssl=true,password=', listKeys(resourceId('Microsoft.Cache/Redis', variables('redisCacheName')), '2015-08-01').primaryKey)]"
+            }
+          ],
           "metadata": [{
             "name": "CURRENT_STACK",
             "value": "dotnet"
