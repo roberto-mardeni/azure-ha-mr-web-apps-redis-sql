@@ -94,7 +94,7 @@
       ],
       "properties": {
         "mode": "Incremental",
-        "template": {
+        "templateLink": {
           "uri": "[parameters('ResourceGroupTemplateUri')]",
           "contentVersion": "1.0.0.0"
         },
