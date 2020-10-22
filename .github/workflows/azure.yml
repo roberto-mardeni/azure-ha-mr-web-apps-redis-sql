@@ -29,6 +29,12 @@ jobs:
           # Paste output of `az ad sp create-for-rbac` as value of secret variable: AZURE_CREDENTIALS
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Calculate SAS Token Expiration
+        id: expiry
+        run: |
+          end=$(date -u -d "6 hours" '+%Y-%m-%dT%H:%MZ')
+          echo "::set-output name=templateuri::$uri"
+
       - name: Upload Region Templates
         id: templateupload
         uses: azure/CLI@v1
@@ -36,9 +42,8 @@ jobs:
           inlineScript: |
             name='${{env.PREFIX}}.region.deploy.json'
             az storage blob upload --container-name templates --file src/templates/region.deploy.json --name $name
-            end=$(date -u -d "6 hours" '+%Y-%m-%dT%H:%MZ')
-            echo "Token will expire on $end"
-            uri=$(az storage blob generate-sas --container-name templates --name $name --permissions r --expiry $end --https-only -o tsv)
+            echo "Token will expire on ${{ steps.expiry.outputs.end }}"
+            uri=$(az storage blob generate-sas --container-name templates --name $name --permissions r --expiry ${{ steps.expiry.outputs.end }} --https-only -o tsv)
             echo "::set-output name=templateuri::$uri"
 
       - name: Verify output
