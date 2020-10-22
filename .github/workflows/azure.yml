@@ -36,7 +36,7 @@ jobs:
           inlineScript: |
             name='${{env.PREFIX}}.region.deploy.jsonregion.deploy.json'
             az storage blob upload --container-name templates --file src/templates/region.deploy.json --name $name
-            end=`date -u -d "120 minutes" '+%Y-%m-%dT%H:%MZ'`
+            end=`date -u -d "2 hours" '+%Y-%m-%dT%H:%MZ'`
             sastoken=$(az storage generate-sas --container-name templates --name name --permissions r --expiry $end --https-only)
             "::set-output name=TemplateToken::$sastoken"
 
