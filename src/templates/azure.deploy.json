@@ -72,8 +72,8 @@
     }
   },
   "variables": {
-    "firstRegionPrefix": "[concat(parameters('Prefix'),'-a-')]",
-    "firstRegionResourceGroupName": "[concat(variables('firstRegionPrefix'),'-rg')]"
+    "firstRegionPrefix": "[concat(parameters('Prefix'),'a')]",
+    "firstRegionResourceGroupName": "[concat(variables('firstRegionPrefix'),'rg')]"
   },
   "functions": [],
   "resources": [{
