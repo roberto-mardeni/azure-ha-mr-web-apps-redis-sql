@@ -33,7 +33,7 @@ jobs:
         id: expiry
         run: |
           end=$(date -u -d "6 hours" '+%Y-%m-%dT%H:%MZ')
-          echo "::set-output name=templateuri::$uri"
+          echo "::set-output name=end::$end"
 
       - name: Upload Region Templates
         id: templateupload
