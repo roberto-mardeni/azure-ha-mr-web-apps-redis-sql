@@ -65,7 +65,65 @@
         "WestUS2",
         "WestUS3"
       ],
-      "defaultValue": "eastus"
+      "defaultValue": "EastUS"
+    },
+    "SecondRegionLocation": {
+      "type": "string",
+      "allowedValues": [
+        "AustraliaCentral",
+        "AustraliaCentral2",
+        "AustraliaEast",
+        "AustraliaSoutheast",
+        "BrazilSouth",
+        "BrazilSoutheast",
+        "CanadaCentral",
+        "CanadaEast",
+        "CentralIndia",
+        "CentralUS",
+        "CentralUSEUAP",
+        "ChinaEast",
+        "ChinaEast2",
+        "ChinaNorth",
+        "ChinaNorth2",
+        "EastAsia",
+        "EastUS",
+        "EastUS2",
+        "EastUS2EUAP",
+        "FranceCentral",
+        "FranceSouth",
+        "GermanyCentral",
+        "GermanyNorth",
+        "GermanyNortheast",
+        "GermanyWestCentral",
+        "JapanEast",
+        "JapanWest",
+        "JioIndiaCentral",
+        "JioIndiaWest",
+        "KoreaCentral",
+        "KoreaSouth",
+        "NorthCentralUS",
+        "NorthEurope",
+        "NorwayEast",
+        "NorwayWest",
+        "SouthAfricaNorth",
+        "SouthAfricaWest",
+        "SouthCentralUS",
+        "SoutheastAsia",
+        "SouthIndia",
+        "SwitzerlandNorth",
+        "SwitzerlandWest",
+        "UAECentral",
+        "UAENorth",
+        "UKSouth",
+        "UKWest",
+        "WestCentralUS",
+        "WestEurope",
+        "WestIndia",
+        "WestUS",
+        "WestUS2",
+        "WestUS3"
+      ],
+      "defaultValue": "WestUS"
     },
     "ResourceGroupTemplateUri": {
       "type": "string"
@@ -73,7 +131,9 @@
   },
   "variables": {
     "firstRegionPrefix": "[concat(parameters('Prefix'),'a')]",
-    "firstRegionResourceGroupName": "[concat(variables('firstRegionPrefix'),'rg')]"
+    "firstRegionResourceGroupName": "[concat(variables('firstRegionPrefix'),'rg')]",
+    "secondRegionPrefix": "[concat(parameters('Prefix'),'b')]",
+    "secondRegionResourceGroupName": "[concat(variables('secondRegionPrefix'),'rg')]"
   },
   "functions": [],
   "resources": [{
@@ -101,6 +161,27 @@
         "parameters": {
           "prefix": {
             "value": "[variables('firstRegionPrefix')]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-10-01",
+      "name": "[variables('secondRegionResourceGroupName')]",
+      "resourceGroup": "[variables('secondRegionResourceGroupName')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/resourceGroups', variables('secondRegionResourceGroupName'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[parameters('ResourceGroupTemplateUri')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "prefix": {
+            "value": "[variables('secondRegionPrefix')]"
           }
         }
       }
