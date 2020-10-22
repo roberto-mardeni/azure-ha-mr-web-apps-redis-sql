@@ -166,6 +166,14 @@
       }
     },
     {
+      "name": "[variables('secondRegionResourceGroupName')]",
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2020-06-01",
+      "location": "[parameters('SecondRegionLocation')]",
+      "tags": {},
+      "properties": {}
+    },
+    {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
       "name": "[variables('secondRegionResourceGroupName')]",
