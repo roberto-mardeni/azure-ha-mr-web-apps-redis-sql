@@ -164,35 +164,6 @@
           }
         }
       }
-    },
-    {
-      "name": "[variables('secondRegionResourceGroupName')]",
-      "type": "Microsoft.Resources/resourceGroups",
-      "apiVersion": "2020-06-01",
-      "location": "[parameters('SecondRegionLocation')]",
-      "tags": {},
-      "properties": {}
-    },
-    {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-10-01",
-      "name": "[variables('secondRegionResourceGroupName')]",
-      "resourceGroup": "[variables('secondRegionResourceGroupName')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/resourceGroups', variables('secondRegionResourceGroupName'))]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[parameters('ResourceGroupTemplateUri')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "prefix": {
-            "value": "[variables('secondRegionPrefix')]"
-          }
-        }
-      }
     }
   ],
   "outputs": {}
