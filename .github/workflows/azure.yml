@@ -14,6 +14,7 @@ on:
 env:
   FIRST_LOCATION: "eastus"
   PREFIX: "hamrwa"
+  AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -39,7 +40,8 @@ jobs:
             sastoken=$(az storage generate-sas --container-name templates --name name --permissions r --expiry $end --https-only)
             "::set-output name=TemplateToken::$sastoken"
 
-      - run: echo ${{ steps.templateupload.outputs.sastoken }}
+      - name: Verify output
+        run: echo ${{ steps.templateupload.outputs.sastoken }}
 
       # - name: Deploy ARM Template
       #   id: arm
