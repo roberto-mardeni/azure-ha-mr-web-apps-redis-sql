@@ -13,6 +13,7 @@ on:
 
 env:
   FIRST_LOCATION: "EastUS"
+  SECOND_LOCATION: "WestUS"
   PREFIX: "hamrwa"
   AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
 
@@ -54,4 +55,4 @@ jobs:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           region: ${{ env.FIRST_LOCATION }}
           template: src/templates/azure.deploy.json
-          parameters: ResourceGroupTemplateUri=${{ steps.templateupload.outputs.templateuri }} FirstRegionLocation=${{ env.FIRST_LOCATION }}
+          parameters: ResourceGroupTemplateUri=${{ steps.templateupload.outputs.templateuri }} FirstRegionLocation=${{ env.FIRST_LOCATION }} SecondRegionLocation=${{ env.SECOND_LOCATION }}
