@@ -99,7 +99,9 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "prefix": "[variables('firstRegionPrefix')]"
+          "prefix": {
+            "value": "[variables('firstRegionPrefix')]"
+          }
         }
       }
     }
