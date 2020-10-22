@@ -52,5 +52,6 @@ jobs:
         with:
           scope: subscription
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          region: ${{ env.FIRST_LOCATION }}
           template: src/templates/azure.deploy.json
           parameters: uri=${{ steps.templateupload.outputs.templateuri }} firstRegionLocation=${{ env.FIRST_LOCATION }}
