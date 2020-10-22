@@ -87,7 +87,7 @@
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-10-01",
-      "name": "[concat(variables('firstRegionResourceGroupName'),'-deploy')]",
+      "name": "[variables('firstRegionResourceGroupName')]",
       "resourceGroup": "[variables('firstRegionResourceGroupName')]",
       "dependsOn": [
         "[resourceId('Microsoft.Resources/resourceGroups', variables('firstRegionResourceGroupName'))]"
