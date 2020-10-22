@@ -38,7 +38,7 @@ jobs:
             az storage blob upload --container-name templates --file src/templates/region.deploy.json --name $name
             end=`date -u -d "2 hours" '+%Y-%m-%dT%H:%MZ'`
             sastoken=$(az storage generate-sas --container-name templates --name name --permissions r --expiry $end --https-only)
-            "::set-output name=TemplateToken::$sastoken"
+            echo "::set-output name=TemplateToken::$sastoken"
 
       - name: Verify output
         run: echo ${{ steps.templateupload.outputs.sastoken }}
