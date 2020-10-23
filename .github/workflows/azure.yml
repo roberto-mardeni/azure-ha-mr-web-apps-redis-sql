@@ -61,4 +61,4 @@ jobs:
           region: ${{ env.FIRST_LOCATION }}
           template: src/templates/azure.deploy.json
           parameters: ResourceGroupTemplateUri=${{ steps.templateupload.outputs.templateuri }} FirstRegionLocation=${{ env.FIRST_LOCATION }} SecondRegionLocation=${{ env.SECOND_LOCATION }}
-          deploymentName: azure.deploy.${{env.GITHUB_RUN_NUMBER}}
+          deploymentName: azure.deploy.${{env.PREFIX}}.${{env.GITHUB_RUN_ID}}
