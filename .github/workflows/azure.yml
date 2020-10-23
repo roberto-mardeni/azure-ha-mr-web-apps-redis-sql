@@ -47,6 +47,9 @@ jobs:
             uri=$(az storage blob generate-sas --container-name templates --name $name --permissions r --expiry ${{ steps.expiry.outputs.end }} --full-uri --https-only -o tsv)
             echo "::set-output name=templateuri::$uri"
 
+      - name: Print GITHUB_RUN_NUMBER
+        run: echo ${{env.GITHUB_RUN_NUMBER}}
+
       - name: Deploy ARM Template
         id: arm
         uses: azure/arm-deploy@v1
