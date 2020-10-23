@@ -50,7 +50,7 @@ jobs:
       - name: Print Environment Variables
         run: |
           set
-          echo "This is the GITHUB_RUN_NUMBER ${{env.GITHUB_RUN_NUMBER}}"
+          echo "This is the GITHUB_RUN_NUMBER ${{GITHUB_RUN_NUMBER}}"
 
       - name: Deploy ARM Template
         id: arm
