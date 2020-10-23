@@ -176,6 +176,18 @@
         "siteConfig": {
           "defaultDocuments": [],
           "appSettings": [],
+          "connectionStrings": [
+            {
+              "connectionString": "[concat(variables('redisCacheName'),'.redis.cache.windows.net,abortConnect=false,ssl=true,password=', listKeys(resourceId('Microsoft.Cache/Redis', variables('redisCacheName')), '2015-08-01').primaryKey)]",
+              "name": "CacheConnection",
+              "type": "RedisCache"
+            },
+            {
+              "connectionString": "[concat('Server=tcp:',reference(variables('dbServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',reference(variables('dbServerName')).administratorLogin,';Password=',variables('databasePassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
+              "name": "DatabaseConnection",
+              "type": "SQLAzure"
+            }
+          ],
           "metadata": [
             {
               "name": "CURRENT_STACK",
