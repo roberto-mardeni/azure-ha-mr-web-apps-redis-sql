@@ -15,10 +15,60 @@
     "webAppName": "[concat(parameters('prefix'),'-app')]",
     "webApiPlanName": "[concat(parameters('prefix'),'-api-asp')]",
     "webApiName": "[concat(parameters('prefix'),'-api')]",
-    "redisCacheName": "[concat(parameters('prefix'),'-rc')]"
+    "redisCacheName": "[concat(parameters('prefix'),'-rc')]",
+    "dbServerName": "[concat(parameters('prefix'),'-sql')]",
+    "databaseName": "DatabaseName"
   },
   "functions": [],
-  "resources": [{
+  "resources": [
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Sql/servers",
+      "location": "[resourceGroup().location]",
+      "name": "[variables('dbServerName')]",
+      "properties": {
+        "administratorLogin": "sysadmin",
+        "administratorLoginPassword": "Password$123",
+        "version": "12.0"
+      },
+      "resources": [
+        {
+          "apiVersion": "2019-06-01-preview",
+          "dependsOn": [
+            "[concat('Microsoft.Sql/servers/', variables('dbServerName'))]"
+          ],
+          "location": "[resourceGroup().location]",
+          "tags": {},
+          "name": "[variables('databaseName')]",
+          "properties": {
+            "collation": "SQL_Latin1_General_CP1_CI_AS",
+            "maxSizeBytes": 536870912000,
+            "zoneRedundant": true,
+            "readScale": "Enabled",
+            "readReplicaCount": 1
+          },
+          "sku": {
+            "name": "P1",
+            "tier": "Premium"
+          },
+          "type": "databases"
+        },
+        {
+          "apiVersion": "2015-05-01-preview",
+          "dependsOn": [
+            "[concat('Microsoft.Sql/servers/', variables('dbServerName'))]"
+          ],
+          "location": "[resourceGroup().location]",
+          "name": "AllowAllWindowsAzureIps",
+          "properties": {
+            "endIpAddress": "0.0.0.0",
+            "startIpAddress": "0.0.0.0"
+          },
+          "type": "firewallrules"
+        }
+      ]
+    },
+    {
       "name": "[variables('redisCacheName')]",
       "type": "Microsoft.Cache/redis",
       "apiVersion": "2019-07-01",
@@ -34,7 +84,8 @@
         "redisVersion": "4",
         "replicasPerMaster": 2
       }
-    }, {
+    },
+    {
       "apiVersion": "2018-02-01",
       "name": "[variables('webAppPlanName')]",
       "type": "Microsoft.Web/serverfarms",
@@ -51,29 +102,40 @@
         "Tier": "Standard",
         "Name": "S1"
       }
-    }, {
+    },
+    {
       "apiVersion": "2018-11-01",
       "name": "[variables('webAppName')]",
       "type": "Microsoft.Web/sites",
       "location": "[resourceGroup().location]",
       "tags": {},
       "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', variables('dbServerName'))]",
         "[resourceId('Microsoft.Cache/redis', variables('redisCacheName'))]",
         "[resourceId('Microsoft.Web/serverfarms/', variables('webAppPlanName'))]"
       ],
       "properties": {
         "siteConfig": {
           "defaultDocuments": [],
-          "appSettings": [
-            { 
+          "appSettings": [],
+          "connectionStrings": [
+            {
+              "connectionString": "[concat(variables('redisCacheName'),'.redis.cache.windows.net,abortConnect=false,ssl=true,password=', listKeys(resourceId('Microsoft.Cache/Redis', variables('redisCacheName')), '2015-08-01').primaryKey)]",
               "name": "CacheConnection",
-              "value": "[concat(variables('redisCacheName'),'.redis.cache.windows.net,abortConnect=false,ssl=true,password=', listKeys(resourceId('Microsoft.Cache/Redis', variables('redisCacheName')), '2015-08-01').primaryKey)]"
+              "type": "RedisCache"
+            },
+            {
+              "connectionString": "[concat('Server=tcp:',reference(variables('dbServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',reference(variables('dbServerName')).administratorLogin,';Password=',reference(variables('dbServerName')).administratorLoginPassword,';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
+              "name": "DatabaseConnection",
+              "type": "SQLAzure"
             }
           ],
-          "metadata": [{
-            "name": "CURRENT_STACK",
-            "value": "dotnet"
-          }],
+          "metadata": [
+            {
+              "name": "CURRENT_STACK",
+              "value": "dotnet"
+            }
+          ],
           "phpVersion": "OFF",
           "netFrameworkVersion": "v4.0",
           "alwaysOn": true
@@ -99,7 +161,8 @@
         "Tier": "Standard",
         "Name": "S1"
       }
-    }, {
+    },
+    {
       "apiVersion": "2018-11-01",
       "name": "[variables('webApiName')]",
       "type": "Microsoft.Web/sites",
@@ -112,10 +175,12 @@
         "siteConfig": {
           "defaultDocuments": [],
           "appSettings": [],
-          "metadata": [{
-            "name": "CURRENT_STACK",
-            "value": "dotnet"
-          }],
+          "metadata": [
+            {
+              "name": "CURRENT_STACK",
+              "value": "dotnet"
+            }
+          ],
           "phpVersion": "OFF",
           "netFrameworkVersion": "v4.0",
           "alwaysOn": true
