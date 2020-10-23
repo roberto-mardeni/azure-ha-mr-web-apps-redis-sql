@@ -48,7 +48,7 @@ jobs:
             echo "::set-output name=templateuri::$uri"
 
       - name: Print GITHUB_RUN_NUMBER
-        run: echo ${{env.GITHUB_RUN_NUMBER}}
+        run: echo ${{process.env.GITHUB_RUN_NUMBER}}
 
       - name: Deploy ARM Template
         id: arm
@@ -59,4 +59,4 @@ jobs:
           region: ${{ env.FIRST_LOCATION }}
           template: src/templates/azure.deploy.json
           parameters: ResourceGroupTemplateUri=${{ steps.templateupload.outputs.templateuri }} FirstRegionLocation=${{ env.FIRST_LOCATION }} SecondRegionLocation=${{ env.SECOND_LOCATION }}
-          deploymentName: azure.deploy.${{env.GITHUB_RUN_NUMBER}}
+          deploymentName: azure.deploy.${{process.env.GITHUB_RUN_NUMBER}}
