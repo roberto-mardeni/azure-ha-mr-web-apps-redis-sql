@@ -123,7 +123,7 @@
         "WestUS2",
         "WestUS3"
       ],
-      "defaultValue": "WestUS"
+      "defaultValue": "WestUS2"
     },
     "ResourceGroupTemplateUri": {
       "type": "string"
