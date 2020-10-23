@@ -17,7 +17,8 @@
     "webApiName": "[concat(parameters('prefix'),'-api')]",
     "redisCacheName": "[concat(parameters('prefix'),'-rc')]",
     "dbServerName": "[concat(parameters('prefix'),'-sql')]",
-    "databaseName": "DatabaseName"
+    "databaseName": "DatabaseName",
+    "databasePassword": "Password$123"
   },
   "functions": [],
   "resources": [
@@ -28,7 +29,7 @@
       "name": "[variables('dbServerName')]",
       "properties": {
         "administratorLogin": "sysadmin",
-        "administratorLoginPassword": "Password$123",
+        "administratorLoginPassword": "[variables('databasePassword')]",
         "version": "12.0"
       },
       "resources": [
@@ -125,7 +126,7 @@
               "type": "RedisCache"
             },
             {
-              "connectionString": "[concat('Server=tcp:',reference(variables('dbServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',reference(variables('dbServerName')).administratorLogin,';Password=',reference(variables('dbServerName')).administratorLoginPassword,';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
+              "connectionString": "[concat('Server=tcp:',reference(variables('dbServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',reference(variables('dbServerName')).administratorLogin,';Password=',variables('databasePassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
               "name": "DatabaseConnection",
               "type": "SQLAzure"
             }
