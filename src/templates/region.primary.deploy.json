@@ -203,5 +203,10 @@
       }
     }
   ],
-  "outputs": {}
+  "outputs": {
+    "databaseId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Sql/servers/databases', variables('databaseName'))]"
+    }
+  }
 }

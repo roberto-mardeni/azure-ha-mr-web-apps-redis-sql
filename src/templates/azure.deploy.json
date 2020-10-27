@@ -125,7 +125,10 @@
       ],
       "defaultValue": "WestUS2"
     },
-    "ResourceGroupTemplateUri": {
+    "FirstResourceGroupTemplateUri": {
+      "type": "string"
+    },
+    "SecondResourceGroupTemplateUri": {
       "type": "string"
     }
   },
@@ -136,7 +139,8 @@
     "secondRegionResourceGroupName": "[concat(variables('secondRegionPrefix'),'rg')]"
   },
   "functions": [],
-  "resources": [{
+  "resources": [
+    {
       "name": "[variables('firstRegionResourceGroupName')]",
       "type": "Microsoft.Resources/resourceGroups",
       "apiVersion": "2020-06-01",
@@ -155,12 +159,45 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[parameters('ResourceGroupTemplateUri')]",
+          "uri": "[parameters('FirstResourceGroupTemplateUri')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
           "prefix": {
             "value": "[variables('firstRegionPrefix')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "[variables('secondRegionResourceGroupName')]",
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2020-06-01",
+      "location": "[parameters('SecondRegionLocation')]",
+      "tags": {},
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-10-01",
+      "name": "[variables('secondRegionResourceGroupName')]",
+      "resourceGroup": "[variables('secondRegionResourceGroupName')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/resourceGroups', variables('secondRegionResourceGroupName'))]",
+        "[resourceId('Microsoft.Resources/deployments', variables('firstRegionResourceGroupName'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[parameters('SecondResourceGroupTemplateUri')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "prefix": {
+            "value": "[variables('secondRegionPrefix')]"
+          },
+          "sourceDatabaseId": {
+            "value": "[reference(variables('secondRegionResourceGroupName')).outputs.databaseId.value]"
           }
         }
       }

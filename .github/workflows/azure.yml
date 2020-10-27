@@ -41,11 +41,16 @@ jobs:
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            name='${{env.PREFIX}}.region.deploy.json'
-            az storage blob upload --container-name templates --file src/templates/region.deploy.json --name $name
+            name='${{env.PREFIX}}.region.primary.deploy.json'
+            az storage blob upload --container-name templates --file src/templates/region.primary.deploy.json --name $name
             echo "Token will expire on ${{ steps.expiry.outputs.end }}"
             uri=$(az storage blob generate-sas --container-name templates --name $name --permissions r --expiry ${{ steps.expiry.outputs.end }} --full-uri --https-only -o tsv)
-            echo "::set-output name=templateuri::$uri"
+            echo "::set-output name=firsttemplateuri::$uri"
+            name='${{env.PREFIX}}.region.secondary.deploy.json'
+            az storage blob upload --container-name templates --file src/templates/region.secondary.deploy.json --name $name
+            echo "Token will expire on ${{ steps.expiry.outputs.end }}"
+            uri=$(az storage blob generate-sas --container-name templates --name $name --permissions r --expiry ${{ steps.expiry.outputs.end }} --full-uri --https-only -o tsv)
+            echo "::set-output name=secondtemplateuri::$uri"
 
       - name: Deploy ARM Template
         id: arm
@@ -55,5 +60,5 @@ jobs:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           region: ${{ env.FIRST_LOCATION }}
           template: src/templates/azure.deploy.json
-          parameters: ResourceGroupTemplateUri=${{ steps.templateupload.outputs.templateuri }} FirstRegionLocation=${{ env.FIRST_LOCATION }} SecondRegionLocation=${{ env.SECOND_LOCATION }}
+          parameters: FirstResourceGroupTemplateUri=${{ steps.templateupload.outputs.firsttemplateuri }} SecondResourceGroupTemplateUri=${{ steps.templateupload.outputs.secondtemplateuri }} FirstRegionLocation=${{ env.FIRST_LOCATION }} SecondRegionLocation=${{ env.SECOND_LOCATION }}
           deploymentName: ${{ env.PREFIX }}.${{ github.run_id }}
