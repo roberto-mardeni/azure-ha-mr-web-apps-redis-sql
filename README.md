@@ -12,3 +12,4 @@ The ARM template does not include security restrictions considerations like:
 
 - https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/app-service-web-app/multi-region
 - https://github.com/Azure/azure-quickstart-templates
+- https://cloud-right.com/2018/05/azure-arm-sql/
