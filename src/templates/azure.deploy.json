@@ -143,7 +143,8 @@
     "secondWebApiPlanName": "[concat(variables('secondRegionPrefix'),'-api-asp')]",
     "secondWebApiName": "[concat(variables('secondRegionPrefix'),'-api')]",
     "secondRedisCacheName": "[concat(variables('secondRegionPrefix'),'-rc')]",
-    "secondDbServerName": "[concat(variables('secondRegionPrefix'),'-sql')]"
+    "secondDbServerName": "[concat(variables('secondRegionPrefix'),'-sql')]",
+    "failoverGroupName": "[toLower(concat(parameters('Prefix'),'-af-',variables('databaseName')))]"
   },
   "functions": [],
   "resources": [
@@ -419,7 +420,6 @@
       "location": "[parameters('SecondRegionLocation')]",
       "tags": {},
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', variables('secondDbServerName'))]",
         "[resourceId('Microsoft.Cache/redis', variables('secondRedisCacheName'))]",
         "[resourceId('Microsoft.Web/serverfarms/', variables('secondWebAppPlanName'))]"
       ],
@@ -434,7 +434,7 @@
               "type": "RedisCache"
             },
             {
-              "connectionString": "[concat('Server=tcp:',reference(variables('secondDbServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',reference(variables('secondDbServerName')).administratorLogin,';Password=',variables('databasePassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
+              "connectionString": "[concat('Server=tcp:',variables('failoverGroupName'),'.database.windows.net,1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',variables('databaseUsername'),';Password=',variables('databasePassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
               "name": "DatabaseConnection",
               "type": "SQLAzure"
             }
@@ -478,7 +478,6 @@
       "location": "[parameters('SecondRegionLocation')]",
       "tags": {},
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', variables('secondDbServerName'))]",
         "[resourceId('Microsoft.Cache/redis', variables('secondRedisCacheName'))]",
         "[resourceId('Microsoft.Web/serverfarms/', variables('secondWebApiPlanName'))]"
       ],
@@ -493,7 +492,7 @@
               "type": "RedisCache"
             },
             {
-              "connectionString": "[concat('Server=tcp:',reference(variables('secondDbServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',reference(variables('secondDbServerName')).administratorLogin,';Password=',variables('databasePassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
+              "connectionString": "[concat('Server=tcp:',variables('failoverGroupName'),'.database.windows.net,1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',variables('databaseUsername'),';Password=',variables('databasePassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
               "name": "DatabaseConnection",
               "type": "SQLAzure"
             }
@@ -513,7 +512,7 @@
       }
     },
     {
-      "name": "[concat(variables('firstDbServerName'), '/', parameters('Prefix'), '-af-', toLower(variables('databaseName')))]",
+      "name": "[concat(variables('firstDbServerName'), '/', variables('failoverGroupName'))]",
       "type": "Microsoft.Sql/servers/failoverGroups",
       "location": "[parameters('FirstRegionLocation')]",
       "apiVersion": "2015-05-01-preview",
