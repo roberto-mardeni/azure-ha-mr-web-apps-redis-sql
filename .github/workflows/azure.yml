@@ -12,6 +12,7 @@ on:
       - 'src/**'
 
 env:
+  RESOURCE_GROUP_NAME: "hamrwa-rg"
   FIRST_LOCATION: "EastUS"
   SECOND_LOCATION: "WestUS2"
   PREFIX: "hamrwa"
@@ -33,32 +34,22 @@ jobs:
       - name: Azure Login
         uses: Azure/login@v1
         with:
-          # Paste output of `az ad sp create-for-rbac` as value of secret variable: AZURE_CREDENTIALS
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Upload Region Templates
-        id: templateupload
+      
+      - name: Create Resource Groups
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            name='${{env.PREFIX}}.region.primary.deploy.json'
-            az storage blob upload --container-name templates --file src/templates/region.primary.deploy.json --name $name
-            echo "Token will expire on ${{ steps.expiry.outputs.end }}"
-            uri=$(az storage blob generate-sas --container-name templates --name $name --permissions r --expiry ${{ steps.expiry.outputs.end }} --full-uri --https-only -o tsv)
-            echo "::set-output name=firsttemplateuri::$uri"
-            name='${{env.PREFIX}}.region.secondary.deploy.json'
-            az storage blob upload --container-name templates --file src/templates/region.secondary.deploy.json --name $name
-            echo "Token will expire on ${{ steps.expiry.outputs.end }}"
-            uri=$(az storage blob generate-sas --container-name templates --name $name --permissions r --expiry ${{ steps.expiry.outputs.end }} --full-uri --https-only -o tsv)
-            echo "::set-output name=secondtemplateuri::$uri"
+            az group create -l ${{ env.FIRST_LOCATION }} -n ${{env.RESOURCE_GROUP_NAME}}
 
       - name: Deploy ARM Template
         id: arm
         uses: azure/arm-deploy@v1
         with:
-          scope: subscription
+          scope: resourcegroup
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
           region: ${{ env.FIRST_LOCATION }}
           template: src/templates/azure.deploy.json
-          parameters: FirstResourceGroupTemplateUri=${{ steps.templateupload.outputs.firsttemplateuri }} SecondResourceGroupTemplateUri=${{ steps.templateupload.outputs.secondtemplateuri }} FirstRegionLocation=${{ env.FIRST_LOCATION }} SecondRegionLocation=${{ env.SECOND_LOCATION }}
+          parameters: FirstRegionLocation=${{ env.FIRST_LOCATION }} SecondRegionLocation=${{ env.SECOND_LOCATION }}
           deploymentName: ${{ env.PREFIX }}.${{ github.run_id }}

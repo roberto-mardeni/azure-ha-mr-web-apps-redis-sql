@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "Prefix": {
@@ -124,82 +124,393 @@
         "WestUS3"
       ],
       "defaultValue": "WestUS2"
-    },
-    "FirstResourceGroupTemplateUri": {
-      "type": "string"
-    },
-    "SecondResourceGroupTemplateUri": {
-      "type": "string"
     }
   },
   "variables": {
+    "databaseName": "DatabaseName",
+    "databasePassword": "Password$123",
     "firstRegionPrefix": "[concat(parameters('Prefix'),'a')]",
-    "firstRegionResourceGroupName": "[concat(variables('firstRegionPrefix'),'rg')]",
-    "secondRegionPrefix": "[concat(parameters('Prefix'),'b')]",
-    "secondRegionResourceGroupName": "[concat(variables('secondRegionPrefix'),'rg')]"
+    "firstWebAppPlanName": "[concat(variables('firstRegionPrefix'),'-app-asp')]",
+    "firstWebAppName": "[concat(variables('firstRegionPrefix'),'-app')]",
+    "firstWebApiPlanName": "[concat(variables('firstRegionPrefix'),'-api-asp')]",
+    "firstWebApiName": "[concat(variables('firstRegionPrefix'),'-api')]",
+    "firstRedisCacheName": "[concat(variables('firstRegionPrefix'),'-rc')]",
+    "firstDbServerName": "[concat(variables('firstRegionPrefix'),'-sql')]",
+    "secondRegionPrefix": "[concat(variables('secondRegionPrefix'),'b')]",
+    "secondWebAppPlanName": "[concat(variables('secondRegionPrefix'),'-app-asp')]",
+    "secondWebAppName": "[concat(variables('secondRegionPrefix'),'-app')]",
+    "secondWebApiPlanName": "[concat(variables('secondRegionPrefix'),'-api-asp')]",
+    "secondWebApiName": "[concat(variables('secondRegionPrefix'),'-api')]",
+    "secondRedisCacheName": "[concat(variables('secondRegionPrefix'),'-rc')]",
+    "secondDbServerName": "[concat(variables('secondRegionPrefix'),'-sql')]"
   },
   "functions": [],
   "resources": [
     {
-      "name": "[variables('firstRegionResourceGroupName')]",
-      "type": "Microsoft.Resources/resourceGroups",
-      "apiVersion": "2020-06-01",
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Sql/servers",
       "location": "[parameters('FirstRegionLocation')]",
-      "tags": {},
-      "properties": {}
+      "name": "[variables('firstDbServerName')]",
+      "properties": {
+        "administratorLogin": "sysadmin",
+        "administratorLoginPassword": "[variables('databasePassword')]",
+        "version": "12.0"
+      },
+      "resources": [
+        {
+          "apiVersion": "2019-06-01-preview",
+          "dependsOn": [
+            "[concat('Microsoft.Sql/servers/', variables('firstDbServerName'))]"
+          ],
+          "location": "[parameters('FirstRegionLocation')]",
+          "tags": {},
+          "name": "[variables('databaseName')]",
+          "properties": {
+            "collation": "SQL_Latin1_General_CP1_CI_AS",
+            "maxSizeBytes": 536870912000,
+            "zoneRedundant": true,
+            "readScale": "Enabled",
+            "readReplicaCount": 1
+          },
+          "sku": {
+            "name": "P1",
+            "tier": "Premium"
+          },
+          "type": "databases"
+        },
+        {
+          "apiVersion": "2015-05-01-preview",
+          "dependsOn": [
+            "[concat('Microsoft.Sql/servers/', variables('firstDbServerName'))]"
+          ],
+          "location": "[parameters('FirstRegionLocation')]",
+          "name": "AllowAllWindowsAzureIps",
+          "properties": {
+            "endIpAddress": "0.0.0.0",
+            "startIpAddress": "0.0.0.0"
+          },
+          "type": "firewallrules"
+        }
+      ]
     },
     {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-10-01",
-      "name": "[variables('firstRegionResourceGroupName')]",
-      "resourceGroup": "[variables('firstRegionResourceGroupName')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/resourceGroups', variables('firstRegionResourceGroupName'))]"
-      ],
+      "name": "[variables('firstRedisCacheName')]",
+      "type": "Microsoft.Cache/redis",
+      "apiVersion": "2019-07-01",
+      "location": "[parameters('FirstRegionLocation')]",
       "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[parameters('FirstResourceGroupTemplateUri')]",
-          "contentVersion": "1.0.0.0"
+        "sku": {
+          "name": "Premium",
+          "family": "P",
+          "capacity": 1
         },
-        "parameters": {
-          "prefix": {
-            "value": "[variables('firstRegionPrefix')]"
-          }
-        }
+        "redisConfiguration": {},
+        "enableNonSslPort": false,
+        "redisVersion": "4",
+        "replicasPerMaster": 2
       }
     },
     {
-      "name": "[variables('secondRegionResourceGroupName')]",
-      "type": "Microsoft.Resources/resourceGroups",
-      "apiVersion": "2020-06-01",
-      "location": "[parameters('SecondRegionLocation')]",
+      "apiVersion": "2018-02-01",
+      "name": "[variables('firstWebAppPlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[parameters('FirstRegionLocation')]",
+      "kind": "",
       "tags": {},
-      "properties": {}
+      "dependsOn": [],
+      "properties": {
+        "workerSize": "0",
+        "workerSizeId": "0",
+        "numberOfWorkers": "1"
+      },
+      "sku": {
+        "Tier": "Standard",
+        "Name": "S1"
+      }
     },
     {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-10-01",
-      "name": "[variables('secondRegionResourceGroupName')]",
-      "resourceGroup": "[variables('secondRegionResourceGroupName')]",
+      "apiVersion": "2018-11-01",
+      "name": "[variables('firstWebAppName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[parameters('FirstRegionLocation')]",
+      "tags": {},
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/resourceGroups', variables('secondRegionResourceGroupName'))]",
-        "[resourceId('Microsoft.Resources/deployments', variables('firstRegionResourceGroupName'))]"
+        "[resourceId('Microsoft.Sql/servers', variables('firstDbServerName'))]",
+        "[resourceId('Microsoft.Cache/redis', variables('firstRedisCacheName'))]",
+        "[resourceId('Microsoft.Web/serverfarms/', variables('firstWebAppPlanName'))]"
       ],
       "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[parameters('SecondResourceGroupTemplateUri')]",
-          "contentVersion": "1.0.0.0"
+        "siteConfig": {
+          "defaultDocuments": [],
+          "appSettings": [],
+          "connectionStrings": [
+            {
+              "connectionString": "[concat(variables('firstRedisCacheName'),'.redis.cache.windows.net,abortConnect=false,ssl=true,password=', listKeys(resourceId('Microsoft.Cache/Redis', variables('firstRedisCacheName')), '2015-08-01').primaryKey)]",
+              "name": "CacheConnection",
+              "type": "RedisCache"
+            },
+            {
+              "connectionString": "[concat('Server=tcp:',reference(variables('firstDbServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',reference(variables('firstDbServerName')).administratorLogin,';Password=',variables('databasePassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
+              "name": "DatabaseConnection",
+              "type": "SQLAzure"
+            }
+          ],
+          "metadata": [
+            {
+              "name": "CURRENT_STACK",
+              "value": "dotnet"
+            }
+          ],
+          "phpVersion": "OFF",
+          "netFrameworkVersion": "v4.0",
+          "alwaysOn": true
         },
-        "parameters": {
-          "prefix": {
-            "value": "[variables('secondRegionPrefix')]"
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('firstWebAppPlanName'))]",
+        "clientAffinityEnabled": true
+      }
+    },
+    {
+      "apiVersion": "2018-02-01",
+      "name": "[variables('firstWebApiPlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[parameters('FirstRegionLocation')]",
+      "kind": "",
+      "tags": {},
+      "dependsOn": [],
+      "properties": {
+        "workerSize": "0",
+        "workerSizeId": "0",
+        "numberOfWorkers": "1"
+      },
+      "sku": {
+        "Tier": "Standard",
+        "Name": "S1"
+      }
+    },
+    {
+      "apiVersion": "2018-11-01",
+      "name": "[variables('firstWebApiName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[parameters('FirstRegionLocation')]",
+      "tags": {},
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', variables('firstDbServerName'))]",
+        "[resourceId('Microsoft.Cache/redis', variables('firstRedisCacheName'))]",
+        "[resourceId('Microsoft.Web/serverfarms/', variables('firstWebApiPlanName'))]"
+      ],
+      "properties": {
+        "siteConfig": {
+          "defaultDocuments": [],
+          "appSettings": [],
+          "connectionStrings": [
+            {
+              "connectionString": "[concat(variables('firstRedisCacheName'),'.redis.cache.windows.net,abortConnect=false,ssl=true,password=', listKeys(resourceId('Microsoft.Cache/Redis', variables('firstRedisCacheName')), '2015-08-01').primaryKey)]",
+              "name": "CacheConnection",
+              "type": "RedisCache"
+            },
+            {
+              "connectionString": "[concat('Server=tcp:',reference(variables('firstDbServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',reference(variables('firstDbServerName')).administratorLogin,';Password=',variables('databasePassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
+              "name": "DatabaseConnection",
+              "type": "SQLAzure"
+            }
+          ],
+          "metadata": [
+            {
+              "name": "CURRENT_STACK",
+              "value": "dotnet"
+            }
+          ],
+          "phpVersion": "OFF",
+          "netFrameworkVersion": "v4.0",
+          "alwaysOn": true
+        },
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('firstWebApiPlanName'))]",
+        "clientAffinityEnabled": true
+      }
+    },
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Sql/servers",
+      "location": "[resourceGroup().location]",
+      "name": "[variables('secondDbServerName')]",
+      "properties": {
+        "administratorLogin": "sysadmin",
+        "administratorLoginPassword": "[variables('databasePassword')]",
+        "version": "12.0"
+      },
+      "resources": [
+        {
+          "apiVersion": "2019-06-01-preview",
+          "dependsOn": [
+            "[concat('Microsoft.Sql/servers/', variables('secondDbServerName'))]",
+            "[resourceId('Microsoft.Sql/servers/databases', variables('firstDbServerName'))]"
+          ],
+          "location": "[resourceGroup().location]",
+          "tags": {},
+          "name": "[variables('databaseName')]",
+          "properties": {
+            "createMode": "OnlineSecondary",
+            "sourceDatabaseId": "[resourceId('Microsoft.Sql/servers/databases', variables('firstDbServerName'))]",
+            "collation": "SQL_Latin1_General_CP1_CI_AS",
+            "maxSizeBytes": 536870912000,
+            "zoneRedundant": true,
+            "readScale": "Enabled",
+            "readReplicaCount": 1
           },
-          "sourceDatabaseId": {
-            "value": "[reference(concat('Microsoft.Resources/deployments/', variables('firstRegionResourceGroupName'))).outputs.databaseId.value]"
-          }
+          "sku": {
+            "name": "P1",
+            "tier": "Premium"
+          },
+          "type": "databases"
+        },
+        {
+          "apiVersion": "2015-05-01-preview",
+          "dependsOn": [
+            "[concat('Microsoft.Sql/servers/', variables('secondDbServerName'))]"
+          ],
+          "location": "[resourceGroup().location]",
+          "name": "AllowAllWindowsAzureIps",
+          "properties": {
+            "endIpAddress": "0.0.0.0",
+            "startIpAddress": "0.0.0.0"
+          },
+          "type": "firewallrules"
         }
+      ]
+    },
+    {
+      "name": "[variables('secondRedisCacheName')]",
+      "type": "Microsoft.Cache/redis",
+      "apiVersion": "2019-07-01",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "sku": {
+          "name": "Premium",
+          "family": "P",
+          "capacity": 1
+        },
+        "redisConfiguration": {},
+        "enableNonSslPort": false,
+        "redisVersion": "4",
+        "replicasPerMaster": 2
+      }
+    },
+    {
+      "apiVersion": "2018-02-01",
+      "name": "[variables('secondWebAppPlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[resourceGroup().location]",
+      "kind": "",
+      "tags": {},
+      "dependsOn": [],
+      "properties": {
+        "workerSize": "0",
+        "workerSizeId": "0",
+        "numberOfWorkers": "1"
+      },
+      "sku": {
+        "Tier": "Standard",
+        "Name": "S1"
+      }
+    },
+    {
+      "apiVersion": "2018-11-01",
+      "name": "[variables('secondWebAppName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "tags": {},
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', variables('secondDbServerName'))]",
+        "[resourceId('Microsoft.Cache/redis', variables('secondRedisCacheName'))]",
+        "[resourceId('Microsoft.Web/serverfarms/', variables('secondWebAppPlanName'))]"
+      ],
+      "properties": {
+        "siteConfig": {
+          "defaultDocuments": [],
+          "appSettings": [],
+          "connectionStrings": [
+            {
+              "connectionString": "[concat(variables('secondRedisCacheName'),'.redis.cache.windows.net,abortConnect=false,ssl=true,password=', listKeys(resourceId('Microsoft.Cache/Redis', variables('secondRedisCacheName')), '2015-08-01').primaryKey)]",
+              "name": "CacheConnection",
+              "type": "RedisCache"
+            },
+            {
+              "connectionString": "[concat('Server=tcp:',reference(variables('secondDbServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',reference(variables('secondDbServerName')).administratorLogin,';Password=',variables('databasePassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
+              "name": "DatabaseConnection",
+              "type": "SQLAzure"
+            }
+          ],
+          "metadata": [
+            {
+              "name": "CURRENT_STACK",
+              "value": "dotnet"
+            }
+          ],
+          "phpVersion": "OFF",
+          "netFrameworkVersion": "v4.0",
+          "alwaysOn": true
+        },
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('secondWebAppPlanName'))]",
+        "clientAffinityEnabled": true
+      }
+    },
+    {
+      "apiVersion": "2018-02-01",
+      "name": "[variables('secondWebApiPlanName')]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[resourceGroup().location]",
+      "kind": "",
+      "tags": {},
+      "dependsOn": [],
+      "properties": {
+        "workerSize": "0",
+        "workerSizeId": "0",
+        "numberOfWorkers": "1"
+      },
+      "sku": {
+        "Tier": "Standard",
+        "Name": "S1"
+      }
+    },
+    {
+      "apiVersion": "2018-11-01",
+      "name": "[variables('secondWebApiName')]",
+      "type": "Microsoft.Web/sites",
+      "location": "[resourceGroup().location]",
+      "tags": {},
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', variables('secondDbServerName'))]",
+        "[resourceId('Microsoft.Cache/redis', variables('secondRedisCacheName'))]",
+        "[resourceId('Microsoft.Web/serverfarms/', variables('secondWebApiPlanName'))]"
+      ],
+      "properties": {
+        "siteConfig": {
+          "defaultDocuments": [],
+          "appSettings": [],
+          "connectionStrings": [
+            {
+              "connectionString": "[concat(variables('secondRedisCacheName'),'.redis.cache.windows.net,abortConnect=false,ssl=true,password=', listKeys(resourceId('Microsoft.Cache/Redis', variables('secondRedisCacheName')), '2015-08-01').primaryKey)]",
+              "name": "CacheConnection",
+              "type": "RedisCache"
+            },
+            {
+              "connectionString": "[concat('Server=tcp:',reference(variables('secondDbServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',reference(variables('secondDbServerName')).administratorLogin,';Password=',variables('databasePassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
+              "name": "DatabaseConnection",
+              "type": "SQLAzure"
+            }
+          ],
+          "metadata": [
+            {
+              "name": "CURRENT_STACK",
+              "value": "dotnet"
+            }
+          ],
+          "phpVersion": "OFF",
+          "netFrameworkVersion": "v4.0",
+          "alwaysOn": true
+        },
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('secondWebApiPlanName'))]",
+        "clientAffinityEnabled": true
       }
     }
   ],
