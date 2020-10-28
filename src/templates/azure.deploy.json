@@ -136,7 +136,7 @@
     "firstWebApiName": "[concat(variables('firstRegionPrefix'),'-api')]",
     "firstRedisCacheName": "[concat(variables('firstRegionPrefix'),'-rc')]",
     "firstDbServerName": "[concat(variables('firstRegionPrefix'),'-sql')]",
-    "secondRegionPrefix": "[concat(variables('secondRegionPrefix'),'b')]",
+    "secondRegionPrefix": "[concat(parameters('Prefix'),'b')]",
     "secondWebAppPlanName": "[concat(variables('secondRegionPrefix'),'-app-asp')]",
     "secondWebAppName": "[concat(variables('secondRegionPrefix'),'-app')]",
     "secondWebApiPlanName": "[concat(variables('secondRegionPrefix'),'-api-asp')]",
@@ -331,7 +331,7 @@
     {
       "apiVersion": "2015-05-01-preview",
       "type": "Microsoft.Sql/servers",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('SecondRegionLocation')]",
       "name": "[variables('secondDbServerName')]",
       "properties": {
         "administratorLogin": "sysadmin",
@@ -345,7 +345,7 @@
             "[concat('Microsoft.Sql/servers/', variables('secondDbServerName'))]",
             "[resourceId('Microsoft.Sql/servers/databases', variables('firstDbServerName'))]"
           ],
-          "location": "[resourceGroup().location]",
+          "location": "[parameters('SecondRegionLocation')]",
           "tags": {},
           "name": "[variables('databaseName')]",
           "properties": {
@@ -368,7 +368,7 @@
           "dependsOn": [
             "[concat('Microsoft.Sql/servers/', variables('secondDbServerName'))]"
           ],
-          "location": "[resourceGroup().location]",
+          "location": "[parameters('SecondRegionLocation')]",
           "name": "AllowAllWindowsAzureIps",
           "properties": {
             "endIpAddress": "0.0.0.0",
@@ -382,7 +382,7 @@
       "name": "[variables('secondRedisCacheName')]",
       "type": "Microsoft.Cache/redis",
       "apiVersion": "2019-07-01",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('SecondRegionLocation')]",
       "properties": {
         "sku": {
           "name": "Premium",
@@ -399,7 +399,7 @@
       "apiVersion": "2018-02-01",
       "name": "[variables('secondWebAppPlanName')]",
       "type": "Microsoft.Web/serverfarms",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('SecondRegionLocation')]",
       "kind": "",
       "tags": {},
       "dependsOn": [],
@@ -417,7 +417,7 @@
       "apiVersion": "2018-11-01",
       "name": "[variables('secondWebAppName')]",
       "type": "Microsoft.Web/sites",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('SecondRegionLocation')]",
       "tags": {},
       "dependsOn": [
         "[resourceId('Microsoft.Sql/servers', variables('secondDbServerName'))]",
@@ -458,7 +458,7 @@
       "apiVersion": "2018-02-01",
       "name": "[variables('secondWebApiPlanName')]",
       "type": "Microsoft.Web/serverfarms",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('SecondRegionLocation')]",
       "kind": "",
       "tags": {},
       "dependsOn": [],
@@ -476,7 +476,7 @@
       "apiVersion": "2018-11-01",
       "name": "[variables('secondWebApiName')]",
       "type": "Microsoft.Web/sites",
-      "location": "[resourceGroup().location]",
+      "location": "[parameters('SecondRegionLocation')]",
       "tags": {},
       "dependsOn": [
         "[resourceId('Microsoft.Sql/servers', variables('secondDbServerName'))]",
