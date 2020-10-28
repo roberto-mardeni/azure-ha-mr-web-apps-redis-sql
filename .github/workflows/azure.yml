@@ -25,11 +25,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
   
-      - name: Calculate SAS Token Expiration
-        id: expiry
+      - name: Calculate Timestamp
+        id: timestamp
         run: |
-          end=$(date -u -d "6 hours" '+%Y-%m-%dT%H:%MZ')
-          echo "::set-output name=end::$end"
+          timestamp=$(date -u -d '%Y%m%d%H%M')
+          echo "::set-output name=value::$timestamp"
 
       - name: Azure Login
         uses: Azure/login@v1
@@ -52,4 +52,4 @@ jobs:
           region: ${{ env.FIRST_LOCATION }}
           template: src/templates/azure.deploy.json
           parameters: FirstRegionLocation=${{ env.FIRST_LOCATION }} SecondRegionLocation=${{ env.SECOND_LOCATION }}
-          deploymentName: ${{ env.PREFIX }}.${{ github.run_id }}
+          deploymentName: ${{ env.PREFIX }}.${{ deploy.timestamp.outputs.value }}
