@@ -28,7 +28,7 @@ jobs:
       - name: Calculate Timestamp
         id: timestamp
         run: |
-          timestamp=$(date -u -d "now" '%Y%m%d%H%M')
+          timestamp=$(date -u +%Y%m%d%H%M)
           echo "::set-output name=value::$timestamp"
 
       - name: Azure Login
