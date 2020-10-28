@@ -200,14 +200,13 @@
       "location": "[parameters('FirstRegionLocation')]",
       "properties": {
         "sku": {
-          "name": "Premium",
-          "family": "P",
-          "capacity": 1
+          "name": "Basic",
+          "family": "C",
+          "capacity": 0
         },
         "redisConfiguration": {},
         "enableNonSslPort": false,
-        "redisVersion": "4",
-        "replicasPerMaster": 2
+        "redisVersion": "4"
       }
     },
     {
@@ -385,14 +384,13 @@
       "location": "[parameters('SecondRegionLocation')]",
       "properties": {
         "sku": {
-          "name": "Premium",
-          "family": "P",
-          "capacity": 1
+          "name": "Basic",
+          "family": "C",
+          "capacity": 0
         },
         "redisConfiguration": {},
         "enableNonSslPort": false,
-        "redisVersion": "4",
-        "replicasPerMaster": 2
+        "redisVersion": "4"
       }
     },
     {
