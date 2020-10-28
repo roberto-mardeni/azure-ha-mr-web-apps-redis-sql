@@ -343,14 +343,14 @@
           "apiVersion": "2019-06-01-preview",
           "dependsOn": [
             "[concat('Microsoft.Sql/servers/', variables('secondDbServerName'))]",
-            "[resourceId('Microsoft.Sql/servers/databases', variables('firstDbServerName'))]"
+            "[resourceId('Microsoft.Sql/servers/databases', variables('firstDbServerName'), variables('databaseName'))]"
           ],
           "location": "[parameters('SecondRegionLocation')]",
           "tags": {},
           "name": "[variables('databaseName')]",
           "properties": {
             "createMode": "OnlineSecondary",
-            "sourceDatabaseId": "[resourceId('Microsoft.Sql/servers/databases', variables('firstDbServerName'))]",
+            "sourceDatabaseId": "[resourceId('Microsoft.Sql/servers/databases', variables('firstDbServerName'), variables('databaseName'))]",
             "collation": "SQL_Latin1_General_CP1_CI_AS",
             "maxSizeBytes": 536870912000,
             "zoneRedundant": true,
