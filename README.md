@@ -3,7 +3,12 @@ This reference architecture shows how to run an Azure App Service application in
 
 ![Azure Architecture](docs/app-service-reference-architectures.png)
 
-# References
+## Important
+The ARM template does not include security restrictions considerations like:
+- Private access to Azure SQL or Redis Cache
+- Restricting access to Web Apps only from Azure Front Door
+
+## References
 
 - https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/app-service-web-app/multi-region
 - https://github.com/Azure/azure-quickstart-templates
