@@ -515,6 +515,7 @@
     {
       "name": "[concat(variables('firstDbServerName'), '/', parameters('Prefix'), '-af-', toLower(variables('databaseName')))]",
       "type": "Microsoft.Sql/servers/failoverGroups",
+      "location": "[parameters('FirstRegionLocation')]",
       "apiVersion": "2015-05-01-preview",
       "tags": {},
       "dependsOn": [
@@ -535,7 +536,7 @@
           }
         ],
         "databases": [
-          "[variables('databaseName')]"
+          "[resourceId('Microsoft.Sql/servers/databases', variables('firstDbServerName'), variables('databaseName'))]"
         ]
       }
     }
