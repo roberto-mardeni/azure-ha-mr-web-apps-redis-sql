@@ -144,7 +144,8 @@
     "secondWebApiName": "[concat(variables('secondRegionPrefix'),'-api')]",
     "secondRedisCacheName": "[concat(variables('secondRegionPrefix'),'-rc')]",
     "secondDbServerName": "[concat(variables('secondRegionPrefix'),'-sql')]",
-    "failoverGroupName": "[toLower(concat(parameters('Prefix'),'-af-',variables('databaseName')))]"
+    "failoverGroupName": "[toLower(concat(parameters('Prefix'),'-af-',variables('databaseName')))]",
+    "dbConnectionString": "[concat('Server=tcp:',variables('failoverGroupName'),'.database.windows.net,1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',variables('databaseUsername'),';Password=',variables('databasePassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
   },
   "functions": [],
   "resources": [
@@ -236,7 +237,6 @@
       "location": "[parameters('FirstRegionLocation')]",
       "tags": {},
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', variables('firstDbServerName'))]",
         "[resourceId('Microsoft.Cache/redis', variables('firstRedisCacheName'))]",
         "[resourceId('Microsoft.Web/serverfarms/', variables('firstWebAppPlanName'))]"
       ],
@@ -251,7 +251,7 @@
               "type": "RedisCache"
             },
             {
-              "connectionString": "[concat('Server=tcp:',reference(variables('firstDbServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',reference(variables('firstDbServerName')).administratorLogin,';Password=',variables('databasePassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
+              "connectionString": "[variables('dbConnectionString')]",
               "name": "DatabaseConnection",
               "type": "SQLAzure"
             }
@@ -295,7 +295,6 @@
       "location": "[parameters('FirstRegionLocation')]",
       "tags": {},
       "dependsOn": [
-        "[resourceId('Microsoft.Sql/servers', variables('firstDbServerName'))]",
         "[resourceId('Microsoft.Cache/redis', variables('firstRedisCacheName'))]",
         "[resourceId('Microsoft.Web/serverfarms/', variables('firstWebApiPlanName'))]"
       ],
@@ -310,7 +309,7 @@
               "type": "RedisCache"
             },
             {
-              "connectionString": "[concat('Server=tcp:',reference(variables('firstDbServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',reference(variables('firstDbServerName')).administratorLogin,';Password=',variables('databasePassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
+              "connectionString": "[variables('dbConnectionString')]",
               "name": "DatabaseConnection",
               "type": "SQLAzure"
             }
@@ -434,7 +433,7 @@
               "type": "RedisCache"
             },
             {
-              "connectionString": "[concat('Server=tcp:',variables('failoverGroupName'),'.database.windows.net,1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',variables('databaseUsername'),';Password=',variables('databasePassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
+              "connectionString": "[variables('dbConnectionString')]",
               "name": "DatabaseConnection",
               "type": "SQLAzure"
             }
@@ -492,7 +491,7 @@
               "type": "RedisCache"
             },
             {
-              "connectionString": "[concat('Server=tcp:',variables('failoverGroupName'),'.database.windows.net,1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',variables('databaseUsername'),';Password=',variables('databasePassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
+              "connectionString": "[variables('dbConnectionString')]",
               "name": "DatabaseConnection",
               "type": "SQLAzure"
             }
