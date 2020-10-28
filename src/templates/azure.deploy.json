@@ -511,6 +511,33 @@
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('secondWebApiPlanName'))]",
         "clientAffinityEnabled": true
       }
+    },
+    {
+      "name": "[concat(variables('firstDbServerName'), '/', parameters('Prefix'), '-af-', toLower(variables('databaseName')))]",
+      "type": "Microsoft.Sql/servers/failoverGroups",
+      "apiVersion": "2015-05-01-preview",
+      "tags": {},
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/databases', variables('firstDbServerName'), variables('databaseName'))]",
+        "[resourceId('Microsoft.Sql/servers/databases', variables('secondDbServerName'), variables('databaseName'))]"
+      ],
+      "properties": {
+        "readWriteEndpoint": {
+          "failoverPolicy": "Automatic",
+          "failoverWithDataLossGracePeriodMinutes": 60
+        },
+        "readOnlyEndpoint": {
+          "failoverPolicy": "Enabled"
+        },
+        "partnerServers": [
+          {
+            "id": "[resourceId('Microsoft.Sql/servers', variables('secondDbServerName'))]"
+          }
+        ],
+        "databases": [
+          "[variables('databaseName')]"
+        ]
+      }
     }
   ],
   "outputs": {}
