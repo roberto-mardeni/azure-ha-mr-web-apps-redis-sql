@@ -52,4 +52,4 @@ jobs:
           region: ${{ env.FIRST_LOCATION }}
           template: src/templates/azure.deploy.json
           parameters: FirstRegionLocation=${{ env.FIRST_LOCATION }} SecondRegionLocation=${{ env.SECOND_LOCATION }}
-          deploymentName: ${{ env.PREFIX }}.${{ deploy.timestamp.outputs.value }}
+          deploymentName: ${{ env.PREFIX }}.${{ steps.timestamp.outputs.value }}
