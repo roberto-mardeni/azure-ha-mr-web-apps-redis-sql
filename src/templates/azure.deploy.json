@@ -146,6 +146,7 @@
     "secondDbServerName": "[concat(variables('secondRegionPrefix'),'-sql')]",
     "failoverGroupName": "[toLower(concat(parameters('Prefix'),'-af-',variables('databaseName')))]",
     "dbConnectionString": "[concat('Server=tcp:',variables('failoverGroupName'),'.database.windows.net,1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',variables('databaseUsername'),';Password=',variables('databasePassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
+    "wafPolicyName": "[concat(parameters('Prefix'), '-waf-policy')]",
     "frontDoorName": "[concat(parameters('Prefix'), '-fd')]",
     "frontDoorEndpointName": "[concat(parameters('Prefix'), '-azurefd-net')]"
   },
@@ -540,6 +541,26 @@
       }
     },
     {
+      "apiVersion": "2019-03-01",
+      "type": "Microsoft.Network/FrontDoorWebApplicationFirewallPolicies",
+      "name": "[variables('wafPolicyName')]",
+      "location": "global",
+      "properties": {
+        "policySettings": {
+          "mode": "Detection",
+          "enabledState": "Enabled"
+        },
+        "managedRules": {
+          "managedRuleSets": [
+            {
+              "ruleSetType": "DefaultRuleSet",
+              "ruleSetVersion": "1.0"
+            }
+          ]
+        }
+      }
+    },
+    {
       "apiVersion": "2020-05-01",
       "type": "Microsoft.Network/frontdoors",
       "name": "[variables('frontDoorName')]",
@@ -549,7 +570,8 @@
         "[resourceId('Microsoft.Web/sites', variables('firstWebAppName'))]",
         "[resourceId('Microsoft.Web/sites', variables('secondWebAppName'))]",
         "[resourceId('Microsoft.Web/sites', variables('firstWebApiName'))]",
-        "[resourceId('Microsoft.Web/sites', variables('secondWebApiName'))]"
+        "[resourceId('Microsoft.Web/sites', variables('secondWebApiName'))]",
+        "[resourceId('Microsoft.Network/FrontDoorWebApplicationFirewallPolicies', variables('wafPolicyName'))]"
       ],
       "properties": {
         "enabledState": "Enabled",
@@ -598,7 +620,10 @@
             "name": "[variables('frontDoorEndpointName')]",
             "properties": {
               "hostName": "[concat(variables('frontDoorName'),'.azurefd.net')]",
-              "sessionAffinityEnabledState": "Disabled"
+              "sessionAffinityEnabledState": "Disabled",
+              "webApplicationFirewallPolicyLink": {
+                "id": "[resourceId('Microsoft.Network/FrontDoorWebApplicationFirewallPolicies', variables('wafPolicyName'))]"
+              }
             }
           }
         ],
