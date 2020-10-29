@@ -597,10 +597,8 @@
           {
             "name": "[variables('frontDoorEndpointName')]",
             "properties": {
-              "hostName": "[concat(parameters('Prefix'),'.azurefd.net')]",
-              "sessionAffinityEnabledState": "Enabled",
-              "sessionAffinityTtlSeconds": 0,
-              "customHttpsConfiguration": null
+              "hostName": "[concat(variables('frontDoorEndpointName'),'.azurefd.net')]",
+              "sessionAffinityEnabledState": "Disabled"
             }
           }
         ],
