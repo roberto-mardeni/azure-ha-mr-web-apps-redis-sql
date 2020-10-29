@@ -146,7 +146,7 @@
     "secondDbServerName": "[concat(variables('secondRegionPrefix'),'-sql')]",
     "failoverGroupName": "[toLower(concat(parameters('Prefix'),'-af-',variables('databaseName')))]",
     "dbConnectionString": "[concat('Server=tcp:',variables('failoverGroupName'),'.database.windows.net,1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;User ID=',variables('databaseUsername'),';Password=',variables('databasePassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
-    "wafPolicyName": "[concat(parameters('Prefix'), '-waf-policy')]",
+    "wafPolicyName": "[concat(parameters('Prefix'), 'wafpolicy')]",
     "frontDoorName": "[concat(parameters('Prefix'), '-fd')]",
     "frontDoorEndpointName": "[concat(parameters('Prefix'), '-azurefd-net')]"
   },
